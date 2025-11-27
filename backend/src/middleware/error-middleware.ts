@@ -9,16 +9,17 @@ export const errorMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => { // <--- Explicitly say this returns NOTHING
   const err = error instanceof Error ? error : new Error(String(error));
 
   if (err instanceof ZodError) {
-    return res.status(400).json({
+    res.status(400).json({
       errors: err.errors.map((e) => ({
         path: e.path.join("."),
         message: e.message,
       })),
     });
+    return; // <--- Just stop execution, don't return the value
   } else if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
       err.message = "File size exceeds 10MB limit";
@@ -29,17 +30,20 @@ export const errorMiddleware = (
       err.message = "Only PDF and DOCX files are allowed";
     }
 
-    return res.status(400).json({
+    res.status(400).json({
       errors: err.message,
     });
+    return;
   } else if (err instanceof ResponseError) {
-    return res.status(err.status).json({
+    res.status(err.status).json({
       errors: err.message,
     });
+    return;
   } else {
     logger.error(err);
-    return res.status(500).json({
+    res.status(500).json({
       errors: "Internal Server Error",
     });
+    return;
   }
 };
