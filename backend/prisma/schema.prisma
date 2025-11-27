@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email_instansi String    @unique @db.VarChar(255)
+  password       String    @db.VarChar(255)
+  nama_instansi  String    @db.VarChar(255)
+  role           UserRole  @default(user)
+  token          String?   @db.VarChar(255)
+  letters        Letter[]
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Letter {
+  id               Int          @id @default(autoincrement())
+  nomor_registrasi Int          @unique @default(autoincrement())
+  pengirim         String       @db.VarChar(100)
+  nomor_surat      String       @db.VarChar(50)
+  tanggal_masuk    DateTime     @db.Date  
+  tanggal_surat    DateTime     @db.Date  
+  perihal          String       @db.Text
+  file_url         String       @db.VarChar(255)
+  status           LetterStatus @default(pending)
+  user_id          Int
+  user             User         @relation(fields: [user_id], references: [id])
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  @@map("surat")
+}
+
+enum UserRole {
+  admin
+  user
+}
+
+enum LetterStatus {
+  pending
+  diterima
+}
