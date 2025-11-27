@@ -1,0 +1,21 @@
+# backend/Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the TypeScript code (Assuming you have a "build" script in package.json)
+RUN npm run build
+
+# Expose the port (Cloud Run sets this to 8080)
+ENV PORT=8080
+EXPOSE 8080
+
+# Start the application (Point this to your built main file, e.g., dist/main.js)
+CMD ["node", "dist/main.js"]
