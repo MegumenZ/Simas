@@ -23,13 +23,4 @@ web.use(express.json());
 web.use(publicRouter);
 web.use(dashboardRouter);
 web.use(apiRouter);
-web.use(
-  (
-    error: unknown,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    errorMiddleware(error, req, res, next);
-  }
-);
+web.use(errorMiddleware);
