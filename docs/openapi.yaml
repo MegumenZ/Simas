@@ -1,0 +1,1156 @@
+openapi: 3.0.3
+info:
+  title: SIMAS API
+  description: |
+    API untuk Sistem Manajemen Surat (SIMAS) - Kementerian Komunikasi dan Informatika
+    
+    ## Authentication
+    API ini menggunakan token-based authentication. Setelah login, gunakan token yang diterima di header `X-API-TOKEN` untuk setiap request.
+    
+    ## Rate Limiting
+    Currently no rate limiting implemented. GCP Cloud Run has built-in concurrency limits (80 requests per instance).
+    
+    ## Base URLs
+    - Development: `http://localhost:3001`
+    - Production: `https://simas-backend-xxxx-an.a.run.app`
+  version: 1.0.0
+  contact:
+    name: SIMAS Support
+    email: support@simas.id
+  license:
+    name: ISC
+    url: https://opensource.org/licenses/ISC
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://simas-backend-xxxx-an.a.run.app
+    description: Production server (GCP Cloud Run)
+
+tags:
+  - name: Authentication
+    description: Login and logout operations
+  - name: User Management
+    description: User CRUD operations (Admin only for most endpoints)
+  - name: Letter Management
+    description: Letter (Surat) CRUD operations
+  - name: Dashboard
+    description: Statistics and dashboard data
+
+security:
+  - ApiTokenAuth: []
+
+paths:
+  /api/users/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and receive token
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email_instansi
+                - password
+              properties:
+                email_instansi:
+                  type: string
+                  format: email
+                  example: admin@kominfo.go.id
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: 550e8400-e29b-41d4-a716-446655440000
+                      user:
+                        $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                errors: Invalid credentials
+
+  /api/users/current:
+    get:
+      tags:
+        - User Management
+      summary: Get current user
+      description: Get information of currently logged in user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    
+    patch:
+      tags:
+        - User Management
+      summary: Update current user
+      description: Update profile of currently logged in user
+      operationId: updateCurrentUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nama_instansi:
+                  type: string
+                  maxLength: 255
+                  example: Kementerian Kominfo RI
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 100
+                  example: newpassword123
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      email_instansi:
+                        type: string
+                        example: admin@kominfo.go.id
+                      nama_instansi:
+                        type: string
+                        example: Kementerian Kominfo RI
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    
+    delete:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Logout current user and invalidate token
+      operationId: logout
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: OK
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/users:
+    post:
+      tags:
+        - User Management
+      summary: Register new user (Admin only)
+      description: Create a new user account
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email_instansi
+                - password
+                - nama_instansi
+                - role
+              properties:
+                email_instansi:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 100
+                  example: password123
+                nama_instansi:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Instansi ABC
+                role:
+                  type: string
+                  enum: [admin, user]
+                  example: user
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Email already registered or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    
+    get:
+      tags:
+        - User Management
+      summary: Get all users (Admin only)
+      description: Get list of all users with pagination
+      operationId: getAllUsers
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserWithStats'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/users/{id}:
+    get:
+      tags:
+        - User Management
+      summary: Get user by ID (Admin only)
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserWithStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    patch:
+      tags:
+        - User Management
+      summary: Update user by ID (Admin only)
+      operationId: updateUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nama_instansi:
+                  type: string
+                  maxLength: 255
+                email_instansi:
+                  type: string
+                  format: email
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 100
+                role:
+                  type: string
+                  enum: [admin, user]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - User Management
+      summary: Delete user (Admin only)
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: OK
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/surat:
+    post:
+      tags:
+        - Letter Management
+      summary: Create new letter (Admin only)
+      description: Create a new letter with file upload
+      operationId: createLetter
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - pengirim
+                - nomor_surat
+                - tanggal_masuk
+                - tanggal_surat
+                - perihal
+                - user_id
+                - file
+              properties:
+                pengirim:
+                  type: string
+                  maxLength: 100
+                  example: Dinas Pendidikan
+                nomor_surat:
+                  type: string
+                  maxLength: 50
+                  example: 001/DP/2025
+                tanggal_masuk:
+                  type: string
+                  format: date
+                  example: '2025-12-10'
+                tanggal_surat:
+                  type: string
+                  format: date
+                  example: '2025-12-09'
+                perihal:
+                  type: string
+                  example: Permohonan Kerjasama
+                user_id:
+                  type: integer
+                  example: 2
+                file:
+                  type: string
+                  format: binary
+                  description: PDF or DOCX file (max 10MB)
+      responses:
+        '200':
+          description: Letter created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LetterResponse'
+        '400':
+          description: Validation error or file error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                fileRequired:
+                  value:
+                    errors: File is required
+                invalidFileType:
+                  value:
+                    errors: Only PDF and DOCX files are allowed
+                fileTooLarge:
+                  value:
+                    errors: File size exceeds 10MB limit
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    
+    get:
+      tags:
+        - Letter Management
+      summary: Get all letters (Admin only)
+      description: Get list of all letters with pagination and filters
+      operationId: getAllLetters
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: bulan
+          in: query
+          description: Filter by month (1-12)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: tahun
+          in: query
+          description: Filter by year
+          schema:
+            type: integer
+            example: 2025
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LetterResponse'
+                  total:
+                    type: integer
+                    example: 50
+                  page:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 5
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/surat/me:
+    get:
+      tags:
+        - Letter Management
+      summary: Get my letters
+      description: Get list of letters belonging to current user
+      operationId: getMyLetters
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LetterResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/surat/user/{userId}:
+    get:
+      tags:
+        - Letter Management
+      summary: Get letters by user ID (Admin only)
+      operationId: getLettersByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LetterResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/surat/{nomor_registrasi}:
+    get:
+      tags:
+        - Letter Management
+      summary: Get letter by nomor registrasi
+      operationId: getLetterById
+      parameters:
+        - name: nomor_registrasi
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LetterResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Letter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Letter Management
+      summary: Update letter (Admin only)
+      description: Update letter data and/or file
+      operationId: updateLetter
+      parameters:
+        - name: nomor_registrasi
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                pengirim:
+                  type: string
+                  maxLength: 100
+                nomor_surat:
+                  type: string
+                  maxLength: 50
+                tanggal_masuk:
+                  type: string
+                  format: date
+                tanggal_surat:
+                  type: string
+                  format: date
+                perihal:
+                  type: string
+                user_id:
+                  type: integer
+                file:
+                  type: string
+                  format: binary
+                  description: PDF or DOCX file (max 10MB) - optional
+      responses:
+        '200':
+          description: Letter updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LetterResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Letter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Letter Management
+      summary: Delete letter (Admin only)
+      operationId: deleteLetter
+      parameters:
+        - name: nomor_registrasi
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Letter deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: OK
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Letter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/surat/{nomor_registrasi}/status:
+    patch:
+      tags:
+        - Letter Management
+      summary: Update letter status
+      description: Update status of a letter (pending/diterima)
+      operationId: updateLetterStatus
+      parameters:
+        - name: nomor_registrasi
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, diterima]
+                  example: diterima
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      nomor_registrasi:
+                        type: integer
+                        example: 1
+                      status:
+                        type: string
+                        example: diterima
+                      updated_at:
+                        type: string
+                        format: date-time
+        '400':
+          description: Invalid status value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Letter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/surat/{nomor_registrasi}/file:
+    get:
+      tags:
+        - Letter Management
+      summary: Download letter file
+      description: Download the PDF or DOCX file associated with the letter
+      operationId: downloadLetterFile
+      parameters:
+        - name: nomor_registrasi
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File download
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename="surat-001.pdf"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/surat/laporan-bulanan:
+    get:
+      tags:
+        - Letter Management
+      summary: Get monthly report (Admin only)
+      description: Get monthly report of letters
+      operationId: getMonthlyReport
+      parameters:
+        - name: bulan
+          in: query
+          required: true
+          description: Month (1-12)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: tahun
+          in: query
+          required: true
+          description: Year
+          schema:
+            type: integer
+            example: 2025
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      bulan:
+                        type: integer
+                        example: 12
+                      tahun:
+                        type: integer
+                        example: 2025
+                      total_surat:
+                        type: integer
+                        example: 25
+                      surat_pending:
+                        type: integer
+                        example: 5
+                      surat_diterima:
+                        type: integer
+                        example: 20
+                      letters:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LetterResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dashboard/admin:
+    get:
+      tags:
+        - Dashboard
+      summary: Get admin dashboard stats
+      description: Get statistics for admin dashboard
+      operationId: getAdminStats
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      totalSurat:
+                        type: integer
+                        example: 150
+                      totalUsers:
+                        type: integer
+                        example: 25
+                      recentLetters:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            nomor_surat:
+                              type: string
+                            perihal:
+                              type: string
+                            tanggal_surat:
+                              type: string
+                              format: date
+                            status:
+                              type: string
+                            nama_instansi:
+                              type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dashboard/user:
+    get:
+      tags:
+        - Dashboard
+      summary: Get user dashboard stats
+      description: Get statistics for user dashboard
+      operationId: getUserStats
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      totalSurat:
+                        type: integer
+                        example: 15
+                      recentLetters:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            nomor_surat:
+                              type: string
+                            perihal:
+                              type: string
+                            tanggal_surat:
+                              type: string
+                              format: date
+                            status:
+                              type: string
+                            nama_instansi:
+                              type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    ApiTokenAuth:
+      type: apiKey
+      in: header
+      name: X-API-TOKEN
+      description: Token received from login endpoint
+
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email_instansi:
+          type: string
+          format: email
+          example: admin@kominfo.go.id
+        nama_instansi:
+          type: string
+          example: Kementerian Kominfo
+        role:
+          type: string
+          enum: [admin, user]
+          example: admin
+        created_at:
+          type: string
+          format: date-time
+          example: '2025-01-01T00:00:00.000Z'
+
+    UserWithStats:
+      allOf:
+        - $ref: '#/components/schemas/UserResponse'
+        - type: object
+          properties:
+            total_surat:
+              type: integer
+              example: 15
+
+    LetterResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nomor_registrasi:
+          type: integer
+          example: 1
+        pengirim:
+          type: string
+          example: Dinas Pendidikan
+        nomor_surat:
+          type: string
+          example: 001/DP/2025
+        tanggal_masuk:
+          type: string
+          format: date
+          example: '2025-12-10'
+        tanggal_surat:
+          type: string
+          format: date
+          example: '2025-12-09'
+        perihal:
+          type: string
+          example: Permohonan Kerjasama
+        file_url:
+          type: string
+          example: uploads/surat-001-1733856000000.pdf
+        status:
+          type: string
+          enum: [pending, diterima]
+          example: pending
+        user_id:
+          type: integer
+          example: 2
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 50
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        totalPages:
+          type: integer
+          example: 5
+
+    Error:
+      type: object
+      properties:
+        errors:
+          oneOf:
+            - type: string
+              example: Error message
+            - type: array
+              items:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: email_instansi
+                  message:
+                    type: string
+                    example: Invalid email format
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors: Unauthorized
+
+    Forbidden:
+      description: Forbidden - Insufficient permissions (Admin access required)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors: 'Forbidden: Admin access required'
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - path: email_instansi
+                message: Invalid email format
+              - path: password
+                message: Password must be at least 6 characters
