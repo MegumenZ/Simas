@@ -37,7 +37,7 @@ export default function LettersPage() {
 
   if (error) {
     return (
-      <div className="ml-64 flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen">
         <p className="text-red-500">{error}</p>
       </div>
     );
@@ -48,27 +48,27 @@ export default function LettersPage() {
     : letters.filter((letter) => letter.user?.id === currentUserId);
 
   return (
-    <div className="space-y-6 p-4">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-2 md:p-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Kotak Surat</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Kotak Surat</h1>
         </div>
         {isAdmin && (
           <Link href="/dashboard/letters/add">
-            <Button>+ Tambah Surat</Button>
+            <Button className="w-full sm:w-auto">+ Tambah Surat</Button>
           </Link>
         )}
       </div>
 
-      <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 bg-white p-3 md:p-4 rounded-lg shadow">
         <div className="flex items-center gap-2 text-black">
-          <label className="text-sm text-black font-medium">Bulan:</label>
+          <label className="text-sm text-black font-medium whitespace-nowrap">Bulan:</label>
           <select
             value={month || ""}
             onChange={(e) =>
               setMonth(e.target.value ? parseInt(e.target.value) : undefined)
             }
-            className="h-10 px-3 border border-gray-600 rounded text-sm text-black"
+            className="h-10 px-3 border border-gray-600 rounded text-sm text-black flex-1 sm:flex-none"
           >
             <option value="0">Semua</option>
             {Array.from({ length: 12 }, (_, i) => (
@@ -80,14 +80,14 @@ export default function LettersPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-black">Tahun:</label>
+          <label className="text-sm font-medium text-black whitespace-nowrap">Tahun:</label>
           <input
             type="number"
             value={year || ""}
             onChange={(e) =>
               setYear(e.target.value ? parseInt(e.target.value) : undefined)
             }
-            className="h-10 w-24 px-3 border text-black border-gray-600 rounded text-sm"
+            className="h-10 w-full sm:w-24 px-3 border text-black border-gray-600 rounded text-sm"
             placeholder="Tahun"
             min="2000"
             max="2100"
@@ -95,12 +95,14 @@ export default function LettersPage() {
         </div>
 
         {isAdmin && (
-          <MonthlyReportGenerator
-            month={month}
-            year={year}
-            onMonthChange={setMonth}
-            onYearChange={setYear}
-          />
+          <div className="sm:ml-auto">
+            <MonthlyReportGenerator
+              month={month}
+              year={year}
+              onMonthChange={setMonth}
+              onYearChange={setYear}
+            />
+          </div>
         )}
       </div>
 
