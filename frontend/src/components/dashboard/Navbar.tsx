@@ -20,7 +20,7 @@ export default function Navbar({ user, onMenuClick }: NavbarProps) {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed w-full bg-white shadow-sm z-10"
+      className="w-full bg-white shadow-sm"
     >
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
         <div className="flex items-center">
