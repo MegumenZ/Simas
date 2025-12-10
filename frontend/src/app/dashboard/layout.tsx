@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         onMobileClose={closeMobile}
       />
       <main
-        className={`pt-16 transition-all duration-300 p-4 md:p-6 ml-0 ${isCollapsed ? "md:ml-20" : "md:ml-64"
+        className={`pt-20 transition-all duration-300 p-4 md:p-6 ml-0 ${isCollapsed ? "md:ml-20" : "md:ml-64"
           }`}
       >
         {children}
