@@ -71,7 +71,7 @@ useEffect(() => {
             Selamat Datang, {user?.nama_instansi}
           </h1>
           <p className="text-gray-600 mt-2">
-            Sistem Manajemen Surat dan Dokumen Instansi
+            Sistem Manajemen Arsip
           </p>
         </motion.div>
       </AnimatedDiv>
