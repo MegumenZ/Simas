@@ -1,4 +1,19 @@
-variable "project_id" {}
+variable "project_id" {
+  type = string
+}
+
 variable "region" {
-  default = "asia-southeast2"
+  type = string
+}
+
+variable "frontend_image" {
+  type = string
+}
+
+variable "backend_image" {
+  type = string
+}
+
+variable "backend_url" {
+  type = string
 }
