@@ -7,5 +7,5 @@ output "backend_url" {
 }
 
 output "frontend_lb_ip" {
-  value = google_compute_global_forwarding_rule.frontend_http_rule.ip_address
+  value = google_compute_global_forwarding_rule.frontend_https_rule.ip_address
 }

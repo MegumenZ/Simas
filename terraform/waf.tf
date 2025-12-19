@@ -1,13 +1,36 @@
 resource "google_compute_security_policy" "simas_waf" {
-  name        = "simas-security-policy"
+  name        = "simas-security-policy-v2"
   description = "WAF Basic Protection (SQLi, XSS, Rate Limit)"
   type        = "CLOUD_ARMOR"
 
-  # Rule 1: Rate Limiting (Anti DDoS/Spam)
-  # Membatasi max 200 request per menit per IP
+  # Rule 1: Block SQL Injection
+  rule {
+    action   = "deny(403)"
+    priority = "1000"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('sqli-v33-stable')"
+      }
+    }
+    description = "Block SQL Injection attacks"
+  }
+
+  # Rule 2: Block XSS 
+  rule {
+    action   = "deny(403)"
+    priority = "1100"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('xss-v33-stable')"
+      }
+    }
+    description = "Block XSS attacks"
+  }
+
+  # Rule 3: Rate Limiting
   rule {
     action   = "rate_based_ban"
-    priority = "1000"
+    priority = "2000"
     match {
       versioned_expr = "SRC_IPS_V1"
       config {
@@ -25,30 +48,6 @@ resource "google_compute_security_policy" "simas_waf" {
       ban_duration_sec = 300
     }
     description = "Rate Limit: 200 req/min"
-  }
-
-  # Rule 2: Block XSS (Cross-Site Scripting)
-  rule {
-    action   = "deny(403)"
-    priority = "2000"
-    match {
-      expr {
-        expression = "evaluatePreconfiguredExpr('xss-v33-stable')"
-      }
-    }
-    description = "Block XSS attacks"
-  }
-
-  # Rule 3: Block SQL Injection
-  rule {
-    action   = "deny(403)"
-    priority = "3000"
-    match {
-      expr {
-        expression = "evaluatePreconfiguredExpr('sqli-v33-stable')"
-      }
-    }
-    description = "Block SQL Injection attacks"
   }
 
   # Rule Default: Allow All

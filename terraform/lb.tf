@@ -26,14 +26,3 @@ resource "google_compute_url_map" "frontend_url_map" {
   name            = "simasfe-url-map"
   default_service = google_compute_backend_service.frontend_backend.id
 }
-
-resource "google_compute_target_http_proxy" "frontend_http_proxy" {
-  name    = "simasfe-http-proxy"
-  url_map = google_compute_url_map.frontend_url_map.id
-}
-
-resource "google_compute_global_forwarding_rule" "frontend_http_rule" {
-  name       = "simasfe-http-rule"
-  port_range = "80"
-  target     = google_compute_target_http_proxy.frontend_http_proxy.id
-}
