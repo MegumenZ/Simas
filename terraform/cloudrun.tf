@@ -33,15 +33,14 @@ resource "google_cloud_run_service" "backend" {
   template {
     metadata {
       annotations = {
-        "autoscaling.knative.dev/maxScale" = "20"
-        "run.googleapis.com/vpc-access-connector" =
-          data.google_vpc_access_connector.redis_connector.id
-        "run.googleapis.com/vpc-access-egress" =
-          "private-ranges-only"
+        "autoscaling.knative.dev/maxScale"         = "20"
+        "run.googleapis.com/vpc-access-connector" = var.vpc_connector_id
+        "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
       }
     }
 
     spec {
+      service_account_name = google_service_account.backend_sa.email
       container_concurrency = 80
       timeout_seconds       = 300
 
@@ -52,7 +51,6 @@ resource "google_cloud_run_service" "backend" {
           container_port = 8080
         }
 
-        # Redis (sesuai console)
         env {
           name  = "REDIS_HOST"
           value = data.google_redis_instance.simas_redis.host
@@ -63,7 +61,6 @@ resource "google_cloud_run_service" "backend" {
           value = tostring(data.google_redis_instance.simas_redis.port)
         }
 
-        # Database URL dari Secret Manager
         env {
           name = "DATABASE_URL"
           value_from {

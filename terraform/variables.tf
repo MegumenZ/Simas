@@ -21,3 +21,8 @@ variable "backend_image" {
 variable "backend_url" {
   type = string
 }
+
+variable "vpc_connector_id" {
+  type        = string
+  description = "Full VPC Access Connector ID"
+}
