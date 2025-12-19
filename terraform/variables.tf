@@ -2,7 +2,11 @@ variable "project_id" {
   type = string
 }
 
-variable "region" {
+variable "region_fe" {
+  type = string
+}
+
+variable "region_be" {
   type = string
 }
 

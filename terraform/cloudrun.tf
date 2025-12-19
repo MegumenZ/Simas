@@ -1,6 +1,6 @@
 resource "google_cloud_run_service" "frontend" {
   name     = "simasfe"
-  location = "asia-southeast1"
+  location = var.region_fe
 
   template {
     spec {
@@ -28,7 +28,7 @@ resource "google_cloud_run_service" "frontend" {
 
 resource "google_cloud_run_service" "backend" {
   name     = "simasbe"
-  location = "asia-southeast2"
+  location = var.region_be
 
   template {
     metadata {
