@@ -1,0 +1,8 @@
+# Terraform runtime
+.terraform/
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+
+# Lock file
+.terraform.lock.hcl
