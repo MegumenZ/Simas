@@ -61,7 +61,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 mt-6">
+    <div className="max-w-3xl mx-auto space-y-6 mt-6 py-16">
       <AnimatedDiv>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

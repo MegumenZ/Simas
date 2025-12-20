@@ -17,7 +17,7 @@ export default function EditUserPage() {
   } = useUserOperations();
 
   return (
-    <div className="max-w-md mx-auto mt-6">
+    <div className="max-w-md mx-auto mt-6 py-16">
       <AnimatedDiv>
         <motion.div className="bg-white rounded-xl shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">

@@ -60,7 +60,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 py-16 space-y-6">
       <AnimatedDiv>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

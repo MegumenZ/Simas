@@ -34,7 +34,7 @@ export default function LetterDetailPage() {
   }
 
   return (
-    <div className="space-y-6 mt-6">
+    <div className="space-y-6 mt-6 py-16">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Detail Surat</h1>
         <Button

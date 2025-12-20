@@ -59,7 +59,7 @@ export default function UsersList() {
   }
 
   return (
-    <div className="relative p-6">
+    <div className="relative p-6 py-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

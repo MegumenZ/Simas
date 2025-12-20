@@ -9,7 +9,7 @@ export default function AddUserPage() {
   const { handleSubmit, submitLoading } = useUserOperations();
 
   return (
-    <div className="max-w-md mx-auto mt-6">
+    <div className="max-w-md mx-auto mt-6 py-16">
       <AnimatedDiv>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

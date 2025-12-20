@@ -32,7 +32,7 @@ export default function AddLetterPage() {
   const error = usersError || submitError;
 
   return (
-    <div className="max-w-3xl mx-auto mt-6 ">
+    <div className="max-w-3xl mx-auto mt-6 py-16">
       <AnimatedDiv>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

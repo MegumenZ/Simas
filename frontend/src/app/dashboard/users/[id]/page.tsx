@@ -76,7 +76,7 @@ export default function UserDetailPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 mt-6"
+      className="space-y-6 mt-6 py-16"
     >
       {/* Header section */}
       <div className="flex justify-between items-center">
