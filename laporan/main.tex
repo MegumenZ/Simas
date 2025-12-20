@@ -1,0 +1,493 @@
+\documentclass[11pt,a4paper]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%% Credit %%%%%%%%%%%%%%%%%%%%%%%%
+
+% template ini dibuat oleh martin.manullang@if.itera.ac.id untuk dipergunakan oleh seluruh sivitas akademik itera.
+
+%%%%%%%%%%%%%%%%%%%%%%%%% PACKAGE starts HERE %%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{caption}
+% \usepackage{microtype}
+\captionsetup[table]{name=Tabel}
+\captionsetup[figure]{name=Gambar}
+\usepackage{tabulary}
+\usepackage{minted}
+% \usepackage{amsmath}
+\usepackage{fancyhdr}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+\usepackage{placeins}
+% \usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[all]{xy}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage[left=2cm,right=2cm,top=3cm,bottom=2.5cm]{geometry}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{psfrag}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beramono}
+% Enable inserting code into the document
+\usepackage{listings}
+\usepackage{xcolor} 
+% custom color & style for listing
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{LightGray}{gray}{0.9}
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{green},
+	keywordstyle=\color{codegreen},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=mystyle}
+\renewcommand{\lstlistingname}{Kode}
+%%%%%%%%%%%%%%%%%%%%%%%%% PACKAGE ends HERE %%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% Data Diri %%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\student}{\textbf{Kelompok 3}}
+\newcommand{\course}{\textbf{Komputasi Awan}}
+\newcommand{\assignment}{\textbf{Tugas Besar}}
+
+%%%%%%%%%%%%%%%%%%% using theorem style %%%%%%%%%%%%%%%%%%%%
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exa}[thm]{Example}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{coro}[thm]{Corollary}
+\newtheorem{quest}{Question}[section]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{lipsum}%% a garbage package you don't need except to create examples.
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{Kelompok 3}
+\rhead{ \thepage}
+\cfoot{\textbf{Tugas Besar - Laporan Arsitektur Cloud}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%%%%%%%%%%%%%%  Shortcut for usual set of numbers  %%%%%%%%%%%
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\setlength\headheight{14pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%555
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+	\includegraphics[scale = 0.15]{Figure/ifitera-header.png}
+	\vspace{0.1cm}
+\end{center}
+\noindent
+\rule{17cm}{0.2cm}\\[0.3cm]
+Kelompok: \student \hfill Tugas: \assignment\\[0.1cm]
+Mata Kuliah: \course \hfill Tanggal: 20 Desember 2025\\
+\rule{17cm}{0.05cm}
+\vspace{0.3cm}
+
+\begin{center}
+    \Large{\textbf{Arsitektur Cloud Sistem Manajemen Surat (Simas)\\pada Google Cloud Platform}}
+\end{center}
+\vspace{0.3cm}
+
+\noindent\textbf{Anggota Kelompok:}
+\begin{enumerate}
+    \item Luthfiandri Ardanie - 122140089
+    \item Muhammad Fatih Hanbali - 122140112
+    \item Falih Dzakwan Zuhdi - 122140132
+    \item Hamka Putra Andiyan - 122140121
+    \item Bayu Ega Ferdana - 122140129
+    \item Anjes Bermana - 122140190
+\end{enumerate}
+\vspace{0.3cm}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BODY DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Pendahuluan}
+Sistem Manajemen Surat (Simas) merupakan aplikasi berbasis web untuk pengelolaan surat masuk dan keluar yang di-deploy menggunakan arsitektur \textit{cloud-native} pada Google Cloud Platform (GCP). Sistem ini dirancang dengan pendekatan \textit{serverless} untuk mencapai skalabilitas tinggi, keamanan berlapis, dan efisiensi biaya operasional.
+
+\subsection{Cloud Provider dan Deployment Region}
+Simas menggunakan \textbf{Google Cloud Platform (GCP)} sebagai cloud provider utama dengan deployment di dua region menggunakan Cloud Run \cite{GoogleCloudRun2024}:
+\begin{itemize}
+    \item \textbf{asia-southeast2} (Jakarta, Indonesia) - Backend services, database, dan cache
+    \item \textbf{asia-southeast1} (Singapore) - Frontend services untuk latensi rendah ke pengguna
+\end{itemize}
+
+Pemilihan region ini didasarkan pada pertimbangan latensi rendah untuk pengguna Indonesia dan kepatuhan terhadap regulasi data sovereignty.
+
+\subsection{Arsitektur Sistem}
+Gambar \ref{fig:architecture} menunjukkan arsitektur lengkap sistem Simas yang terdiri dari komponen frontend (Next.js), backend (Express.js), database (Cloud SQL PostgreSQL), cache layer (Redis), load balancer dengan SSL termination, dan security layer (Cloud Armor WAF).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figure/architecture.png}
+    \caption{Arsitektur sistem Simas di Google Cloud Platform}
+    \label{fig:architecture}
+\end{figure}
+
+\FloatBarrier
+\section{Infrastruktur Utama}
+Infrastruktur Simas dibangun menggunakan managed services dari GCP untuk meminimalkan operational overhead dan memaksimalkan reliability.
+
+\subsection{Cloud Run Services}
+Cloud Run dipilih sebagai compute platform karena sifatnya yang serverless, auto-scaling, dan pay-per-use. Sistem memiliki dua Cloud Run services:
+
+\subsubsection{Frontend Service}
+\begin{itemize}
+    \item \textbf{Teknologi:} Next.js 15 dengan React 19 (Server-Side Rendering)
+    \item \textbf{Container:} Node.js 18 Alpine dengan standalone build
+    \item \textbf{Resources:} 1 vCPU, 2GB RAM
+    \item \textbf{Scaling:} 0-20 instances (scale to zero untuk cost optimization)
+    \item \textbf{Concurrency:} 80 requests per instance
+\end{itemize}
+
+\subsubsection{Backend Service}
+Backend service dikonfigurasi dengan minimum 1 instance untuk menghindari cold start dan memastikan response time yang konsisten. Kode \ref{code:cloudrun} menunjukkan konfigurasi Terraform \cite{TerraformGoogle2024} untuk backend service.
+
+\begin{lstlisting}[language=bash, caption=Konfigurasi Cloud Run Backend Service,label={code:cloudrun}]
+resource "google_cloud_run_service" "backend" {
+  name     = "simasbe"
+  location = var.region_be
+
+  template {
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/maxScale" = "20"
+        "run.googleapis.com/vpc-access-connector" = 
+            var.vpc_connector_id
+        "run.googleapis.com/vpc-access-egress" = 
+            "private-ranges-only"
+      }
+    }
+
+    spec {
+      service_account_name  = "compute@developer.gserviceaccount.com"
+      container_concurrency = 80
+      timeout_seconds       = 300
+
+      containers {
+        image = "asia-southeast2-docker.pkg.dev/..."
+        
+        resources {
+          limits = {
+            cpu    = "1000m"
+            memory = "512Mi"
+          }
+        }
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+Spesifikasi lengkap Cloud Run services dapat dilihat pada Tabel \ref{tab:cloudrun}.
+
+\begin{table}[h]
+\caption{Spesifikasi Cloud Run Services}
+\label{tab:cloudrun}
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Spesifikasi} & \textbf{Frontend} & \textbf{Backend} \\ \hline
+CPU & 1000m (1 vCPU) & 1000m (1 vCPU) \\ \hline
+Memory & 2Gi & 512Mi \\ \hline
+Min Instances & 0 & 1 \\ \hline
+Max Instances & 20 & 20 \\ \hline
+Concurrency & 80 & 80 \\ \hline
+Timeout & 300s & 300s \\ \hline
+Region & asia-southeast1 & asia-southeast2 \\ \hline
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+\subsection{Database dan Cache Layer}
+\subsubsection{Cloud SQL PostgreSQL}
+Database menggunakan Cloud SQL PostgreSQL \cite{GoogleCloudSQL2024} dengan konfigurasi:
+\begin{itemize}
+    \item \textbf{Version:} PostgreSQL 14
+    \item \textbf{Tier:} db-f1-micro (0.6GB RAM, shared vCPU)
+    \item \textbf{Storage:} 10GB SSD dengan auto-increase (max 100GB)
+    \item \textbf{Network:} Private IP only (tidak ada public access)
+    \item \textbf{Backup:} Automated daily backup dengan 7-day retention
+\end{itemize}
+
+\subsubsection{Memorystore for Redis}
+Redis \cite{GoogleMemorystore2024} digunakan untuk session storage, caching, dan rate limiting dengan spesifikasi:
+\begin{itemize}
+    \item \textbf{Version:} Redis 7.0
+    \item \textbf{Tier:} Basic (single zone)
+    \item \textbf{Capacity:} 1GB memory
+    \item \textbf{Network:} Private IP dalam VPC
+    \item \textbf{Eviction Policy:} allkeys-lru
+\end{itemize}
+
+\FloatBarrier
+\section{Networking dan Load Balancing}
+\subsection{HTTPS Load Balancer}
+Sistem menggunakan Global HTTPS Load Balancer dengan komponen:
+\begin{itemize}
+    \item \textbf{Frontend NEG:} Serverless Network Endpoint Group ke Cloud Run
+    \item \textbf{Backend Service:} Routing traffic ke frontend NEG
+    \item \textbf{SSL Termination:} HTTPS proxy dengan managed SSL certificate
+    \item \textbf{Static IP:} Global anycast IP untuk low latency
+    \item \textbf{HTTP Redirect:} Automatic redirect dari HTTP ke HTTPS
+\end{itemize}
+
+\subsection{SSL Certificate}
+SSL certificate menggunakan Google-managed certificate untuk domain \texttt{komasimas.web.id} dengan auto-renewal dan TLS 1.2+ minimum version.
+
+\subsection{VPC dan Private Networking}
+Backend service terhubung ke Cloud SQL dan Redis melalui VPC Connector dengan konfigurasi:
+\begin{itemize}
+    \item \textbf{VPC Connector:} Private access ke internal services
+    \item \textbf{Egress Setting:} \texttt{private-ranges-only} untuk security
+    \item \textbf{Subnet Ranges:}
+    \begin{itemize}
+        \item Connector: 10.12.0.0/28
+        \item Cloud SQL: 10.10.0.0/24
+        \item Redis: 10.11.0.0/24
+    \end{itemize}
+\end{itemize}
+
+\FloatBarrier
+\section{Keamanan Multi-Layer}
+\subsection{Cloud Armor Web Application Firewall}
+Cloud Armor WAF \cite{GoogleCloudArmor2024} melindungi aplikasi dari serangan web dengan tiga layer protection yang ditunjukkan pada Kode \ref{code:waf}.
+
+\begin{lstlisting}[language=bash, caption=Konfigurasi Cloud Armor WAF Rules,label={code:waf}]
+resource "google_compute_security_policy" "simas_waf" {
+  name = "simas-security-policy-v2"
+  type = "CLOUD_ARMOR"
+
+  # Rule 1: Block SQL Injection
+  rule {
+    action   = "deny(403)"
+    priority = "1000"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('sqli-v33-stable')"
+      }
+    }
+    description = "Block SQL Injection attacks"
+  }
+
+  # Rule 2: Block XSS
+  rule {
+    action   = "deny(403)"
+    priority = "1100"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('xss-v33-stable')"
+      }
+    }
+    description = "Block XSS attacks"
+  }
+
+  # Rule 3: Rate Limiting
+  rule {
+    action   = "rate_based_ban"
+    priority = "2000"
+    rate_limit_options {
+      conform_action = "allow"
+      exceed_action  = "deny(429)"
+      enforce_on_key = "IP"
+      rate_limit_threshold {
+        count        = 200
+        interval_sec = 60
+      }
+      ban_duration_sec = 300
+    }
+    description = "Rate Limit: 200 req/min"
+  }
+}
+\end{lstlisting}
+
+Tabel \ref{tab:waf} merangkum security rules yang diimplementasikan.
+
+\begin{table}[h]
+\caption{Cloud Armor WAF Security Rules}
+\label{tab:waf}
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Priority} & \textbf{Rule} & \textbf{Action} & \textbf{Threshold} \\ \hline
+1000 & SQL Injection & Deny 403 & - \\ \hline
+1100 & XSS Attack & Deny 403 & - \\ \hline
+2000 & Rate Limiting & Ban 300s & 200 req/min \\ \hline
+Default & Allow All & Allow & - \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Network Security}
+\begin{itemize}
+    \item \textbf{Private IP Only:} Cloud SQL dan Redis tidak memiliki public access
+    \item \textbf{VPC Isolation:} Database hanya accessible melalui VPC Connector
+    \item \textbf{SSL/TLS:} Semua komunikasi dienkripsi (TLS 1.3)
+    \item \textbf{IAM:} Least privilege access dengan service accounts
+\end{itemize}
+
+\subsection{Application Security}
+\begin{itemize}
+    \item \textbf{Authentication:} Token-based authentication dengan UUID
+    \item \textbf{Password Hashing:} bcrypt dengan salt rounds
+    \item \textbf{Authorization:} Role-based access control (admin/user)
+    \item \textbf{Input Validation:} Zod schema validation
+    \item \textbf{SQL Injection Prevention:} Prisma ORM dengan parameterized queries
+\end{itemize}
+
+\FloatBarrier
+\section{Deployment dan Containerization}
+\subsection{Docker Multi-Stage Build}
+Aplikasi menggunakan Docker multi-stage build \cite{DockerBestPractices2024} untuk optimasi ukuran image dan security. Kode \ref{code:docker} menunjukkan Dockerfile backend.
+
+\begin{lstlisting}[language=bash, caption=Backend Dockerfile Multi-Stage Build,label={code:docker}]
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the TypeScript code
+RUN npm run build
+
+# Expose port 8080 (Cloud Run standard)
+ENV PORT=8080
+EXPOSE 8080
+
+# Start the application
+CMD ["node", "dist/main.js"]
+\end{lstlisting}
+
+\FloatBarrier
+\subsection{CI/CD Pipeline}
+Gambar \ref{fig:devops} menunjukkan pipeline deployment yang mencakup build, test, push ke Artifact Registry, dan deploy ke Cloud Run. Pipeline deployment menggunakan strategi rolling update dengan health checks dan automatic rollback pada kegagalan.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figure/devops.png}
+    \caption{Pipeline CI/CD deployment sistem Simas}
+    \label{fig:devops}
+\end{figure}
+
+\FloatBarrier
+\section{Skalabilitas dan Estimasi Cost}
+\subsection{Auto-Scaling Configuration}
+Cloud Run secara otomatis melakukan scaling berdasarkan:
+\begin{itemize}
+    \item Concurrent requests per instance (max 80)
+    \item CPU utilization
+    \item Request queue depth
+\end{itemize}
+
+Frontend dapat scale dari 0 hingga 20 instances (scale to zero untuk cost savings), sedangkan backend maintain minimum 1 instance untuk menghindari cold start dengan maksimum 20 instances untuk high load scenarios.
+
+\subsection{Estimasi Biaya Bulanan}
+Tabel \ref{tab:cost} menunjukkan estimasi biaya operasional bulanan sistem dengan traffic medium (100,000 requests per bulan).
+
+\begin{table}[h]
+\caption{Estimasi Biaya Operasional Bulanan (Medium Traffic)}
+\label{tab:cost}
+\centering
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Komponen} & \textbf{USD/Bulan} & \textbf{IDR/Bulan*} \\ \hline
+Cloud Run Frontend & \$1.60 & Rp 24,960 \\ \hline
+Cloud Run Backend & \$15.00 & Rp 234,000 \\ \hline
+Cloud SQL (db-f1-micro) & \$7.00 & Rp 109,200 \\ \hline
+Memorystore Redis (1GB) & \$15.00 & Rp 234,000 \\ \hline
+Load Balancer & \$5.00 & Rp 78,000 \\ \hline
+Compute Engine (VPC) & \$3.00 & Rp 46,800 \\ \hline
+Networking & \$2.00 & Rp 31,200 \\ \hline
+Artifact Registry & \$0.50 & Rp 7,800 \\ \hline
+Cloud Build & \$0.30 & Rp 4,680 \\ \hline
+Cloud Storage & \$0.30 & Rp 4,680 \\ \hline
+Cloud Logging & \$0.30 & Rp 4,680 \\ \hline
+SSL Certificate & \$0.00 & Rp 0 \\ \hline
+\textbf{Total} & \textbf{\$50.00} & \textbf{Rp 780,000} \\ \hline
+\end{tabular}
+\end{table}
+
+\noindent\textit{*Konversi dengan rate Rp 15,600 per USD}
+
+\vspace{0.3cm}
+\noindent\textbf{Analisis Biaya:}
+\begin{itemize}
+    \item Cloud Run Backend (30\%) dan Redis (30\%) merupakan komponen tertinggi untuk compute dan caching
+    \item Cloud SQL (14\%) untuk managed database dengan automated backups
+    \item Load Balancer dan networking infrastructure ~14\% dari total cost
+    \item Cloud Run Frontend sangat murah (\$1.60) dengan scale-to-zero capability
+    \item Total estimasi Rp 780 ribu/bulan (\$50) sangat cost-efficient untuk production workload
+    \item Pay-per-use model memastikan biaya tetap rendah untuk traffic medium
+\end{itemize}
+
+\FloatBarrier
+\subsection{High Availability}
+\begin{itemize}
+    \item \textbf{Multi-zone deployment:} Cloud Run distributed across zones
+    \item \textbf{Automated backups:} Daily backup dengan 7-day retention
+    \item \textbf{Point-in-Time Recovery:} Database recovery sampai detik tertentu
+    \item \textbf{Health checks:} Automatic instance replacement jika unhealthy
+\end{itemize}
+
+\FloatBarrier
+\section{Kesimpulan}
+Sistem Manajemen Surat (Simas) mengimplementasikan arsitektur cloud-native yang modern dengan karakteristik:
+
+\begin{enumerate}
+    \item \textbf{Serverless Architecture:} Menggunakan Cloud Run untuk compute dengan auto-scaling 0-20 instances, mengurangi operational overhead dan optimasi biaya.
+    
+    \item \textbf{Security Multi-Layer:} 
+    \begin{itemize}
+        \item Cloud Armor WAF melindungi dari SQL injection, XSS, dan rate limiting (200 req/min)
+        \item Private networking untuk database dan cache (no public access)
+        \item SSL/TLS encryption untuk semua komunikasi
+        \item Role-based access control di application layer
+    \end{itemize}
+    
+    \item \textbf{High Availability:} Multi-zone deployment dengan automated backups, point-in-time recovery, dan health checks untuk reliability 99.95\%.
+    
+    \item \textbf{Cost Efficiency:} Estimasi biaya Rp 780 ribu/bulan (\$50) untuk medium traffic dengan pay-per-use model. Cloud Run Backend dan Redis masing-masing 30\% dari total cost. Scale-to-zero frontend dan optimized resource allocation menghemat biaya signifikan.
+    
+    \item \textbf{Infrastructure as Code:} Seluruh infrastruktur dikelola menggunakan Terraform untuk reproducibility dan version control.
+\end{enumerate}
+
+Arsitektur ini membuktikan bahwa aplikasi web modern dapat di-deploy dengan security, scalability, dan cost-efficiency yang optimal menggunakan managed services dari Google Cloud Platform. Dengan biaya ~Rp 780 ribu/bulan, sistem production-ready dengan kemampuan scale hingga 20 instances per service.
+
+\newpage
+\bibliographystyle{IEEEtran}
+\bibliography{Referensi}
+\end{document}
