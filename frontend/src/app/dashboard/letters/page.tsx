@@ -48,7 +48,7 @@ export default function LettersPage() {
     : letters.filter((letter) => letter.user?.id === currentUserId);
 
   return (
-    <div className="space-y-4 md:space-y-6 p-2 md:p-4 py-16">
+    <div className="space-y-4 py-16 md:space-y-6 p-2">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-800">Kotak Surat</h1>
