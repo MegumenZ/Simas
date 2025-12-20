@@ -9,29 +9,57 @@
 
 ## ☁️ Cloud Architecture
 
-```
-                    Internet
-                       │
-                       ▼
-           ┌─────────────────────┐
-           │  Cloud Run          │
-           │  Frontend + Backend │
-           └──────────┬───────────┘
+Sistem ini menerapkan arsitektur *cloud-native* dengan strategi **Multi-region** untuk mengoptimalkan latensi pengguna (Frontend di Singapore) dan kedaulatan data (Backend & Database di Jakarta).
+
+```text
+User / Client (Internet)
+             │
+             │ HTTPS
+             ▼
+┌───────────────────────────────────────────┐
+│      Global External Load Balancer        │
+│ ┌───────────────────┐  ┌────────────────┐ │
+│ │  SSL Termination  │──│  Cloud Armor   │ │
+│ └─────────┬─────────┘  │     (WAF)      │ │
+└───────────┼────────────└────────────────┘ │
+            │                               │
+            │ Routing (URL Map)             │
+            ▼
+┌───────────────────────────────────────────┐
+│  Region: asia-southeast1 (Singapore)      │
+│ ┌───────────────────────────────────────┐ │
+│ │         Cloud Run: Frontend           │ │
+│ │        (Next.js / React)              │ │
+│ └───────────────────┬───────────────────┘ │
+└─────────────────────┼─────────────────────┘
                       │
-         ┌────────────┴────────────┐
-         │                         │
-         ▼                         ▼
-┌─────────────────┐      ┌─────────────────┐
-│  Cloud SQL      │      │  Memorystore    │
-│  (PostgreSQL)   │      │  (Redis)        │
-└─────────────────┘      └─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Cloud Storage  │
-│  (PDF/DOCX)     │
-└─────────────────┘
-```
+                      │ Internal Traffic / API Call
+                      ▼
+┌───────────────────────────────────────────┐
+│  Region: asia-southeast2 (Jakarta)        │
+│ ┌───────────────────────────────────────┐ │
+│ │         Cloud Run: Backend            │ │
+│ │        (Express.js / Node)            │ │
+│ └───────────────────┬───────────────────┘ │
+│                     │                     │
+│                     │ Private Connection  │
+│                     ▼                     │
+│           ┌───────────────────┐           │
+│           │ Serverless VPC    │           │
+│           │    Connector      │           │
+│           └─────────┬─────────┘           │
+│                     │                     │
+│          PRIVATE VPC NETWORK              │
+│  ┌──────────────────┴──────────────────┐  │
+│  │                                     │  │
+│  ▼                                     ▼  │
+│ ┌──────────────────┐  ┌──────────────────┐│
+│ │    Cloud SQL     │  │   Memorystore    ││
+│ │   (PostgreSQL)   │  │     (Redis)      ││
+│ │  Private IP Only │  │  Private IP Only ││
+│ └──────────────────┘  └──────────────────┘│
+└───────────────────────────────────────────┘
+
 
 **Region:** `asia-southeast1` (Singapore)
 
