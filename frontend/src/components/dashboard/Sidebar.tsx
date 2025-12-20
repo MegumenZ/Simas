@@ -37,7 +37,7 @@ export default function Sidebar({
     {
       href: "/dashboard/profile",
       icon: <CgProfile />,
-      label: "Profil Pengguna",
+      label: "Profil User",
     },
     { href: "/dashboard/letters", icon: <FiInbox />, label: "Kotak Surat" },
     ...(user?.role === "admin"
